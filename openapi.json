@@ -1,0 +1,361 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AIPilot Submission Server API",
+    "description": "API for managing AIPilot submissions and battle matches",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:{port}",
+      "description": "Local development server",
+      "variables": {
+        "port": {
+          "default": "3000",
+          "description": "Port number configured in API_PORT environment variable"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/aipilot": {
+      "get": {
+        "summary": "Get AIPilots",
+        "description": "Retrieve AIPilots based on optional query parameters",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by AIPilot name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query", 
+            "description": "Filter by AIPilot ID",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of AIPilots matching the query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AIPilot"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Upload AIPilot",
+        "description": "Upload a new version of an AIPilot or create a new AIPilot",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "AIPilot name (must match regex ^[\\w-]{3,32}$)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\w-]{3,32}$"
+            }
+          },
+          {
+            "name": "ownerId",
+            "in": "query",
+            "description": "Owner ID (required for new AIPs)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "ZIP file containing the AIPilot code",
+          "required": true,
+          "content": {
+            "application/zip": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uploadId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "version": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing parameters or invalid AIP name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid authorization key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches": {
+      "get": {
+        "summary": "Get match results",
+        "description": "Retrieve match results based on optional query parameters",
+        "parameters": [
+          {
+            "name": "aipId",
+            "in": "query",
+            "description": "Filter by AIPilot ID",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Filter by AIPilot version",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by match ID",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of match results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fight/": {
+      "get": {
+        "summary": "Start a manual fight",
+        "description": "Start a manual battle between two AIPilots",
+        "parameters": [
+          {
+            "name": "aipId1",
+            "in": "query",
+            "description": "First AIPilot ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "aipId2",
+            "in": "query",
+            "description": "Second AIPilot ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fight started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "matchId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "One or both AIPs not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "authorization"
+      }
+    },
+    "schemas": {
+      "AIPilot": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[\\w-]{3,32}$"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "current": {
+            "$ref": "#/components/schemas/AIPVersion"
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AIPVersion"
+            }
+          }
+        },
+        "required": ["id", "name", "ownerId", "current", "versions"]
+      },
+      "AIPVersion": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer"
+          },
+          "uploadId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": ["version", "uploadId"]
+      },
+      "MatchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamA": {
+            "$ref": "#/components/schemas/TeamInfo"
+          },
+          "teamB": {
+            "$ref": "#/components/schemas/TeamInfo"
+          },
+          "winner": {
+            "type": "integer",
+            "enum": [0, 1, 2],
+            "description": "Winner team: 0=Allied, 1=Enemy, 2=Unknown"
+          },
+          "manualRun": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "teamA", "teamB", "winner", "manualRun"]
+      },
+      "TeamInfo": {
+        "type": "object",
+        "properties": {
+          "aipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": ["aipId", "version"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": ["error"]
+      }
+    }
+  }
+}
