@@ -5,8 +5,8 @@ import {
 	CommandInteraction,
 	ComponentType,
 	EmbedBuilder,
-	MessagePayload,
-	InteractionEditReplyOptions
+	InteractionEditReplyOptions,
+	MessagePayload
 } from "discord.js";
 
 export function interactionConfirm(prompt: string, iter: CommandInteraction, ephemeral = false) {
@@ -81,6 +81,7 @@ export function replyOrEdit(iter: CommandInteraction, content: string | MessageP
 	if (iter.replied || iter.deferred) {
 		return iter.editReply(content);
 	} else {
+		// @ts-ignore
 		return iter.reply(content);
 	}
 }

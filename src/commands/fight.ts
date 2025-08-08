@@ -47,7 +47,7 @@ class Fight extends SlashCommand {
 		matchEmbed.setDescription(`Simulation running...`);
 		await interaction.reply({ embeds: [matchEmbed] });
 
-		const execResults = await app.runMatch([aip1, aip2], true);
+		const execResults = await app.runMatch([aip1, aip2], true).prom;
 		if (!execResults) {
 			await interaction.editReply(framework.error("An error occurred while running the match.", true));
 			return;
