@@ -33,6 +33,8 @@ interface MatchResult {
 	teamB: { aipId: string; version: number };
 	winner: Team;
 	manualRun: boolean;
+	normalizedName: string;
+	createdAt: number;
 }
 
 interface MatchExecutionResult {
@@ -184,6 +186,37 @@ class Application {
 
 			const result = this.runMatch([aips[0], aips[1]], true);
 			res.json({ matchId: result.id });
+
+			const execResults = await result.prom;
+			const vtgrOutPath = path.join(execResults.simFolderPath, "..", execResults.normalizedName + ".vtgr");
+			const hcConvertProm = await this.convertRecording(path.join(execResults.simFolderPath, "recording.json"), vtgrOutPath);
+
+			if (!hcConvertProm) {
+				this.log.error(`Failed to convert recording for match ${result.id}`);
+				return;
+			}
+		});
+
+		this.api.get("/replay", async (req, res) => {
+			const matchId = req.query.matchId as string;
+			if (!matchId) {
+				res.status(400).json({ error: "Missing required parameter: matchId" });
+				return;
+			}
+
+			const match = await this.matchResults.collection.findOne({ id: matchId });
+			if (!match) {
+				res.status(404).json({ error: "Match not found." });
+				return;
+			}
+
+			const vtgrPath = path.join(simResults, match.normalizedName + ".vtgr");
+			if (!fs.existsSync(vtgrPath)) {
+				res.status(404).json({ error: "Replay file not found." });
+				return;
+			}
+
+			res.download(vtgrPath, match.normalizedName + ".vtgr");
 		});
 
 		this.api.listen(parseInt(process.env.API_PORT), () => {
@@ -297,7 +330,9 @@ class Application {
 				teamA: { aipId: allied.id, version: allied.current.version },
 				teamB: { aipId: enemy.id, version: enemy.current.version },
 				winner: team,
-				manualRun: manualMatchRun
+				manualRun: manualMatchRun,
+				createdAt: Date.now(),
+				normalizedName: normalizedName
 			};
 
 			const execResult: MatchExecutionResult = {

@@ -260,6 +260,57 @@
           }
         }
       }
+    },
+    "/replay": {
+      "get": {
+        "summary": "Download match replay",
+        "description": "Download the replay file (.vtgr) for a specific match",
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "query",
+            "description": "Match ID to download replay for",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Replay file download",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameter: matchId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Match not found or replay file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -330,9 +381,17 @@
           },
           "manualRun": {
             "type": "boolean"
+          },
+          "normalizedName": {
+            "type": "string",
+            "description": "Normalized name for the match (e.g., AIP1_v2_vs_AIP2_v1)"
+          },
+          "createdAt": {
+            "type": "integer",
+            "description": "Unix timestamp when the match was created"
           }
         },
-        "required": ["id", "teamA", "teamB", "winner", "manualRun"]
+        "required": ["id", "teamA", "teamB", "winner", "manualRun", "normalizedName", "createdAt"]
       },
       "TeamInfo": {
         "type": "object",
