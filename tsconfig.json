@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"emitDecoratorMetadata": false,
+		"experimentalDecorators": true,
+		// "declaration": true,
+		"target": "es2023",
+		"moduleResolution": "node",
+		"module": "esnext",
+		"allowSyntheticDefaultImports": true,
+		"outDir": "dist/",
+		"lib": [
+			"ES2023",
+			"DOM"
+		],
+		"skipDefaultLibCheck": true
+	},
+	"include": [
+		"src/",
+	],
+}
