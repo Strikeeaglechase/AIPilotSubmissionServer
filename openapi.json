@@ -41,6 +41,15 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "ownerId",
+            "in": "query",
+            "description": "Filter by AIPilot owner ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -360,9 +369,13 @@
           "uploadId": {
             "type": "string",
             "format": "uuid"
+          },
+          "failCount": {
+            "type": "integer",
+            "description": "Number of times this version has failed during matches"
           }
         },
-        "required": ["version", "uploadId"]
+        "required": ["version", "uploadId", "failCount"]
       },
       "MatchResult": {
         "type": "object",

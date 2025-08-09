@@ -91,6 +91,9 @@ class Application {
 			const idQuery = req.query.id as string;
 			if (idQuery) query["id"] = idQuery;
 
+			const ownerIdQuery = req.query.ownerId as string;
+			if (ownerIdQuery) query["ownerId"] = ownerIdQuery;
+
 			const aips = await this.aips.collection.find(query).toArray();
 			res.json(aips);
 		});

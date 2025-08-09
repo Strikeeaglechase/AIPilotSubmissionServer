@@ -38,7 +38,7 @@ class Upload extends SlashCommand {
 				id: uuidv4(),
 				name,
 				ownerId: interaction.user.id,
-				current: { version: 0, uploadId: "" },
+				current: { version: 0, uploadId: "", failCount: 0 },
 				versions: []
 			};
 
@@ -56,7 +56,8 @@ class Upload extends SlashCommand {
 
 		const newVersion: AIPVersion = {
 			version: aip.current.version + 1,
-			uploadId: dlId
+			uploadId: dlId,
+			failCount: 0
 		};
 
 		await app.aips.collection.updateOne(
