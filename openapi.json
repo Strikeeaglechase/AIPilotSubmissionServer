@@ -114,6 +114,9 @@
                     },
                     "version": {
                       "type": "integer"
+                    },
+                    "aip": {
+                      "$ref": "#/components/schemas/AIPilot"
                     }
                   }
                 }

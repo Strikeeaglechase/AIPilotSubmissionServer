@@ -153,7 +153,7 @@ class Application {
 
 			this.startMatchLoop();
 
-			res.json({ uploadId: dlId, version: newVersion.version });
+			res.json({ uploadId: dlId, version: newVersion.version, aip: aip });
 		});
 
 		this.api.get("/matches", async (req, res) => {
