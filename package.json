@@ -11,6 +11,7 @@
 	"type": "module",
 	"dependencies": {
 		"archiver": "^7.0.1",
+		"body-parser": "^2.2.0",
 		"cors": "^2.8.5",
 		"discord.js": "^14.21.0",
 		"dotenv": "^16.0.3",

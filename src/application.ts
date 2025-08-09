@@ -77,6 +77,8 @@ class Application {
 	private setupApi() {
 		this.api = express();
 		this.api.use(cors());
+		// this.api.use("/aipilot", express.raw({ type: "application/zip", limit: "100mb" }));
+		// this.api.use("/aipilot", express.raw({ type: "application/octet-stream", limit: "25mb" }));
 		// this.api.use(express.json());
 
 		this.api.get("/aipilot", async (req, res) => {
@@ -129,11 +131,11 @@ class Application {
 			}
 
 			const dlId = uuidv4();
-			await new Promise<void>(async r => {
-				const outStream = fs.createWriteStream(path.join(aipUploadDir, `${dlId}.zip`));
-				req.body.pipe(outStream);
+			await new Promise<void>(async res => {
+				const outStream = fs.createWriteStream(path.join(aipUploadDir, `${dlId}.zip`), "binary");
+				req.pipe(outStream);
 
-				outStream.on("finish", () => r());
+				outStream.on("finish", () => res());
 			});
 
 			const newVersion: AIPVersion = {
@@ -148,6 +150,8 @@ class Application {
 					$push: { versions: newVersion }
 				}
 			);
+
+			this.startMatchLoop();
 
 			res.json({ uploadId: dlId, version: newVersion.version });
 		});
@@ -240,7 +244,7 @@ class Application {
 		const nextMatch = await this.getNextMatchToRun();
 		if (nextMatch) {
 			this.log.info(`Found next match to run: ${nextMatch[0].name} vs ${nextMatch[1].name}`);
-			await this.runMatch(nextMatch);
+			await this.runMatch(nextMatch).prom;
 			setTimeout(() => this.checkRunNextMatch());
 		}
 
