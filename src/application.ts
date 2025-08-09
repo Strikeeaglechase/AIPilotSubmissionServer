@@ -113,6 +113,11 @@ class Application {
 				return;
 			}
 
+			if (aip && aip.ownerId != ownerId) {
+				res.status(403).json({ error: "AIP owner missmatch" });
+				return;
+			}
+
 			if (!aip) {
 				if (!aipNameRegex.test(aipName)) {
 					res.status(400).json({ error: `AIP name must match the regex ${aipNameRegex.source}` });
