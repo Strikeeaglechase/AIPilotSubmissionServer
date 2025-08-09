@@ -19,6 +19,7 @@ interface AIPilot {
 interface AIPVersion {
 	version: number;
 	uploadId: string;
+	failCount: number;
 }
 
 enum Team {
@@ -47,6 +48,7 @@ const aipUploadDir = "../uploads/";
 const matchLogPath = "../matchLogs/";
 const simResults = "../simResults/";
 const matchesPer = 10;
+const maxFails = 5;
 const aipNameRegex = /^[\w-]{3,32}$/i;
 class Application {
 	public log: Logger;
@@ -128,7 +130,7 @@ class Application {
 					id: uuidv4(),
 					name: aipName,
 					ownerId: ownerId,
-					current: { version: 0, uploadId: "" },
+					current: { version: 0, uploadId: "", failCount: 0 },
 					versions: []
 				};
 
@@ -145,7 +147,8 @@ class Application {
 
 			const newVersion: AIPVersion = {
 				version: aip.current.version + 1,
-				uploadId: dlId
+				uploadId: dlId,
+				failCount: 0
 			};
 
 			await this.aips.collection.updateOne(
@@ -330,6 +333,8 @@ class Application {
 			logStream.end();
 
 			if (code != 0) {
+				await this.aips.collection.updateMany({ id: { $in: [allied.id, enemy.id] } }, { $inc: { "current.failCount": 1 } });
+				this.log.error(`Match failed with code ${code}, incrementing fail count for AIPs.`);
 				res(null);
 				return;
 			}
@@ -392,6 +397,8 @@ class Application {
 		const aips = await this.aips.collection.find().toArray();
 
 		for (const aip of aips) {
+			if (!aip.current || aip.current.version == 0) continue;
+			if (aip.current.failCount >= maxFails) continue;
 			const history = await this.getHistory(aip);
 
 			for (const otherAip of aips) {
@@ -419,4 +426,4 @@ class Application {
 	}
 }
 
-export { Application, AIPilot, AIPVersion, aipUploadDir, aipNameRegex, Team, MatchResult };
+export { Application, AIPilot, AIPVersion, aipUploadDir, aipNameRegex, Team, MatchResult, maxFails };

@@ -3,7 +3,7 @@ import { SArg } from "strike-discord-framework/dist/slashCommandArgumentParser.j
 
 import { EmbedBuilder } from "@discordjs/builders";
 
-import { Application, MatchResult, Team } from "../application.js";
+import { Application, MatchResult, maxFails, Team } from "../application.js";
 
 function winId(result: MatchResult) {
 	return result.winner == Team.Allied ? result.teamA.aipId : result.teamB.aipId;
@@ -62,6 +62,11 @@ class Stats extends SlashCommand {
 		description += `**Wins-Loss-Win rate:** ${winCount} - ${lossCount} - ${winRate}%\n`;
 		description += `\`\`\`\n${table(historyAgainstTable).join("\n")}\n\`\`\``;
 		embed.setDescription(description);
+
+		if (aip.current.failCount >= maxFails) {
+			embed.setColor(0xff0000);
+			embed.setFooter({ text: "This AIP has failed too many matches and is disabled." });
+		}
 
 		await interaction.reply({ embeds: [embed] });
 	}
