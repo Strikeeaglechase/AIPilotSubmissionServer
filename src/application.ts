@@ -272,6 +272,7 @@ class Application {
 		const aPath = path.resolve(path.join(aipUploadDir, `${allied.current.uploadId}.zip`));
 		const ePath = path.resolve(path.join(aipUploadDir, `${enemy.current.uploadId}.zip`));
 		const mapPath = path.resolve(`../Map/`);
+		const configPath = path.resolve(`../simConfig.json`);
 
 		const args = [
 			"run",
@@ -282,6 +283,8 @@ class Application {
 			`type=bind,src=${ePath},dst=/app/clients/enemy.zip,readonly`,
 			"--mount",
 			`type=bind,src=${mapPath},dst=/app/Map/,readonly`,
+			"--mount",
+			`type=bind,src=${configPath},dst=/app/simConfig.json,readonly`,
 			"--memory=1g",
 			"--memory-swap=1g",
 			"--cpus=1",
