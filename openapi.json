@@ -34,7 +34,7 @@
           },
           {
             "name": "id",
-            "in": "query", 
+            "in": "query",
             "description": "Filter by AIPilot ID",
             "required": false,
             "schema": {
@@ -279,9 +279,9 @@
         "description": "Download the replay file (.vtgr) for a specific match",
         "parameters": [
           {
-            "name": "matchId",
+            "name": "replayId",
             "in": "query",
-            "description": "Match ID to download replay for",
+            "description": "Replay ID to download replay for",
             "required": true,
             "schema": {
               "type": "string",
@@ -302,7 +302,7 @@
             }
           },
           "400": {
-            "description": "Missing required parameter: matchId",
+            "description": "Missing required parameter: replayId",
             "content": {
               "application/json": {
                 "schema": {
@@ -358,7 +358,13 @@
             }
           }
         },
-        "required": ["id", "name", "ownerId", "current", "versions"]
+        "required": [
+          "id",
+          "name",
+          "ownerId",
+          "current",
+          "versions"
+        ]
       },
       "AIPVersion": {
         "type": "object",
@@ -375,7 +381,11 @@
             "description": "Number of times this version has failed during matches"
           }
         },
-        "required": ["version", "uploadId", "failCount"]
+        "required": [
+          "version",
+          "uploadId",
+          "failCount"
+        ]
       },
       "MatchResult": {
         "type": "object",
@@ -392,7 +402,11 @@
           },
           "winner": {
             "type": "integer",
-            "enum": [0, 1, 2],
+            "enum": [
+              0,
+              1,
+              2
+            ],
             "description": "Winner team: 0=Allied, 1=Enemy, 2=Unknown"
           },
           "manualRun": {
@@ -405,9 +419,22 @@
           "createdAt": {
             "type": "integer",
             "description": "Unix timestamp when the match was created"
+          },
+          "replayId": {
+            "type": "string",
+            "description": "Unique identifier for the replay file, or empty string if no replay is available"
           }
         },
-        "required": ["id", "teamA", "teamB", "winner", "manualRun", "normalizedName", "createdAt"]
+        "required": [
+          "id",
+          "teamA",
+          "teamB",
+          "winner",
+          "manualRun",
+          "normalizedName",
+          "createdAt",
+          "replayId"
+        ]
       },
       "TeamInfo": {
         "type": "object",
@@ -420,7 +447,10 @@
             "type": "integer"
           }
         },
-        "required": ["aipId", "version"]
+        "required": [
+          "aipId",
+          "version"
+        ]
       },
       "Error": {
         "type": "object",
@@ -429,7 +459,9 @@
             "type": "string"
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       }
     }
   }

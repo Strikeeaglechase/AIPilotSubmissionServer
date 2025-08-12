@@ -4,8 +4,9 @@ import fs from "fs";
 import path from "path";
 import { SlashCommand, SlashCommandAutocompleteEvent, SlashCommandEvent } from "strike-discord-framework/dist/slashCommand.js";
 import { SArg } from "strike-discord-framework/dist/slashCommandArgumentParser.js";
+import { v4 as uuidv4 } from "uuid";
 
-import { Application, Team } from "../application.js";
+import { Application, replayFolder, Team } from "../application.js";
 
 function zipToBuffer(dirPath: string) {
 	const archive = archiver("zip");
@@ -61,10 +62,12 @@ class Fight extends SlashCommand {
 
 		const replyProm = interaction.editReply({ embeds: [matchEmbed] });
 		const zipProm = zipToBuffer(execResults.simFolderPath);
-		const vtgrOutPath = path.join(execResults.simFolderPath, "..", execResults.normalizedName + ".vtgr");
+		const replayId = uuidv4();
+		const vtgrOutPath = path.join(replayFolder, execResults.normalizedName, replayId + ".vtgr");
 		const hcConvertProm = app.convertRecording(path.join(execResults.simFolderPath, "recording.json"), vtgrOutPath);
 		await Promise.all([replyProm, zipProm, hcConvertProm]);
 
+		await app.matchResults.collection.updateOne({ id: execResults.result.id }, { $set: { replayId: replayId } });
 		const zipBuffer = await zipProm;
 		matchEmbed.setDescription(`Simulation finished!\nWinner: (${Team[execResults.result.winner]}) \`${winnerAip.name} v${winnerAip.current.version}\``);
 

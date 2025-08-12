@@ -36,6 +36,7 @@ interface MatchResult {
 	manualRun: boolean;
 	normalizedName: string;
 	createdAt: number;
+	replayId: string;
 }
 
 interface MatchExecutionResult {
@@ -44,9 +45,11 @@ interface MatchExecutionResult {
 	normalizedName: string;
 }
 
-const aipUploadDir = "../uploads/";
-const matchLogPath = "../matchLogs/";
-const simResults = "../simResults/";
+const aipUploadDir = "../content/uploads/";
+const matchLogPath = "../content/matchLogs/";
+const simResults = "../content/simResults/";
+const replayFolder = "../content/replays/";
+
 const matchesPer = 10;
 const maxFails = 5;
 const aipNameRegex = /^[\w-]{3,32}$/i;
@@ -66,6 +69,7 @@ class Application {
 		if (!fs.existsSync(aipUploadDir)) fs.mkdirSync(aipUploadDir);
 		if (!fs.existsSync(matchLogPath)) fs.mkdirSync(matchLogPath);
 		if (!fs.existsSync(simResults)) fs.mkdirSync(simResults);
+		if (!fs.existsSync(replayFolder)) fs.mkdirSync(replayFolder);
 	}
 
 	public async init() {
@@ -203,29 +207,33 @@ class Application {
 			res.json({ matchId: result.id });
 
 			const execResults = await result.prom;
-			const vtgrOutPath = path.join(execResults.simFolderPath, "..", execResults.normalizedName + ".vtgr");
+			const replayId = uuidv4();
+			const vtgrOutPath = path.join(replayFolder, execResults.normalizedName, replayId + ".vtgr");
 			const hcConvertProm = await this.convertRecording(path.join(execResults.simFolderPath, "recording.json"), vtgrOutPath);
 
 			if (!hcConvertProm) {
 				this.log.error(`Failed to convert recording for match ${result.id}`);
 				return;
 			}
+
+			await this.matchResults.collection.updateOne({ id: result.id }, { $set: { replayId: replayId } });
+			this.log.info(`Replay for match ${result.id} saved with replayId ${replayId}`);
 		});
 
 		this.api.get("/replay", async (req, res) => {
-			const matchId = req.query.matchId as string;
-			if (!matchId) {
-				res.status(400).json({ error: "Missing required parameter: matchId" });
+			const replayId = req.query.replayId as string;
+			if (!replayId) {
+				res.status(400).json({ error: "Missing required parameter: replayId" });
 				return;
 			}
 
-			const match = await this.matchResults.collection.findOne({ id: matchId });
+			const match = await this.matchResults.collection.findOne({ replayId: replayId });
 			if (!match) {
 				res.status(404).json({ error: "Match not found." });
 				return;
 			}
 
-			const vtgrPath = path.join(simResults, match.normalizedName + ".vtgr");
+			const vtgrPath = path.join(replayFolder, match.normalizedName, replayId + ".vtgr");
 			if (!fs.existsSync(vtgrPath)) {
 				res.status(404).json({ error: "Replay file not found." });
 				return;
@@ -352,7 +360,8 @@ class Application {
 				winner: team,
 				manualRun: manualMatchRun,
 				createdAt: Date.now(),
-				normalizedName: normalizedName
+				normalizedName: normalizedName,
+				replayId: ""
 			};
 
 			const execResult: MatchExecutionResult = {
@@ -382,6 +391,10 @@ class Application {
 	}
 
 	public convertRecording(inputPath: string, outputPath: string): Promise<boolean> {
+		// console.log(`Output path: ${path.resolve(outputPath)}`);
+		if (!fs.existsSync(path.dirname(outputPath))) {
+			fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+		}
 		return new Promise(res => {
 			const args = ["--convert", "--input", inputPath, "--output", outputPath, "--map", "../Map"];
 			const child = spawn(process.env.HC_PATH, args);
@@ -432,4 +445,4 @@ class Application {
 	}
 }
 
-export { Application, AIPilot, AIPVersion, aipUploadDir, aipNameRegex, Team, MatchResult, maxFails };
+export { Application, AIPilot, AIPVersion, aipUploadDir, aipNameRegex, Team, MatchResult, maxFails, replayFolder };
