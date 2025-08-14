@@ -242,6 +242,10 @@ class Application {
 			res.download(vtgrPath, match.normalizedName + ".vtgr");
 		});
 
+		this.api.get("/health", (req, res) => {
+			res.json({ status: "ok", timestamp: Date.now() });
+		});
+
 		this.api.listen(parseInt(process.env.API_PORT), () => {
 			console.log(`API opened on ${process.env.API_PORT}`);
 		});
