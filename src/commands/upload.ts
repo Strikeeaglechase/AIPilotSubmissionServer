@@ -23,7 +23,8 @@ class Upload extends SlashCommand {
 			return;
 		}
 
-		let aip: AIPilot = await app.aips.collection.findOne({ name });
+		// let aip: AIPilot = await app.aips.collection.findOne({ name });
+		let aip: AIPilot = await app.getAipByName(name);
 		if (aip && aip.ownerId !== interaction.user.id) {
 			await interaction.reply(framework.error(`You do not own the AIP with name ${name}.`, true));
 			return;
