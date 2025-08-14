@@ -115,7 +115,8 @@ class Application {
 				return;
 			}
 
-			let aip: AIPilot = await this.aips.collection.findOne({ name: aipName });
+			// let aip: AIPilot = await this.aips.collection.findOne({ name: aipName });
+			let aip = await this.getAipByName(aipName);
 			const ownerId = req.query.ownerId as string;
 			if (!aip && !ownerId) {
 				res.status(400).json({ error: "Missing required parameter: ownerId (required for new AIPs)" });
@@ -435,6 +436,22 @@ class Application {
 		}
 
 		return null;
+	}
+
+	public async getAipByName(name: string): Promise<AIPilot | null> {
+		if (!aipNameRegex.test(name)) {
+			// this.log.warn(`Invalid AIP name: ${name}`);
+			return null;
+		}
+
+		const regex = new RegExp(`^${name}$`, "i");
+		const aip = await this.aips.collection.findOne({ name: regex });
+		if (!aip) {
+			// this.log.warn(`AIP with name ${name} not found.`);
+			return null;
+		}
+
+		return aip;
 	}
 
 	public async getHistory(aip: AIPilot) {

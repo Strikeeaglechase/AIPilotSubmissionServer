@@ -30,8 +30,8 @@ class Fight extends SlashCommand {
 		@SArg({ autocomplete: true }) ai1: string,
 		@SArg({ autocomplete: true }) ai2: string
 	) {
-		const aip1 = await app.aips.collection.findOne({ name: ai1 });
-		const aip2 = await app.aips.collection.findOne({ name: ai2 });
+		const aip1 = await app.getAipByName(ai1);
+		const aip2 = await app.getAipByName(ai2);
 
 		if (!aip1) {
 			await interaction.reply(framework.error(`AIP with name \`${ai1}\` does not exist.`, true));

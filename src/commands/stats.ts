@@ -19,7 +19,7 @@ class Stats extends SlashCommand {
 	description = "Gets an AIP's Win/Loss stats";
 
 	public override async run({ interaction, app, framework }: SlashCommandEvent<Application>, @SArg({ autocomplete: true }) name: string) {
-		const aip = await app.aips.collection.findOne({ name });
+		const aip = await app.getAipByName(name);
 		if (!aip) {
 			await interaction.reply(framework.error(`AIP with name \`${name}\` does not exist.`, true));
 			return;
