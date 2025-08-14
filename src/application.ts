@@ -208,6 +208,11 @@ class Application {
 			res.json({ matchId: result.id });
 
 			const execResults = await result.prom;
+			if (!execResults) {
+				this.log.error(`Match ${result.id} failed to run.`);
+				return;
+			}
+
 			const replayId = uuidv4();
 			const vtgrOutPath = path.join(replayFolder, execResults.normalizedName, replayId + ".vtgr");
 			const hcConvertProm = await this.convertRecording(path.join(execResults.simFolderPath, "recording.json"), vtgrOutPath);
