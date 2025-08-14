@@ -79,7 +79,7 @@ class Stats extends SlashCommand {
 		}
 
 		const options = await app.aips.collection
-			.find({ ownerId: interaction.user.id }, { projection: { name: 1 } })
+			.find({}, { projection: { name: 1 } })
 			.map(a => ({ name: a.name, value: a.name }))
 			.toArray();
 
