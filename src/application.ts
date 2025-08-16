@@ -179,8 +179,8 @@ class Application {
 
 			if (aipIdQuery && versionQuery)
 				query["$or"] = [
-					{ $and: [{ "teamA.aipId": aipIdQuery }, { "teamA.version": versionQuery }] },
-					{ $and: [{ "teamB.aipId": aipIdQuery }, { "teamB.version": versionQuery }] }
+					{ $and: [{ "teamA.aipId": aipIdQuery }, { "teamA.version": parseInt(versionQuery) }] },
+					{ $and: [{ "teamB.aipId": aipIdQuery }, { "teamB.version": parseInt(versionQuery) }] }
 				];
 			else if (aipIdQuery) query["$or"] = [{ "teamA.aipId": aipIdQuery }, { "teamB.aipId": aipIdQuery }];
 			else if (versionQuery) query["$or"] = [{ "teamA.version": versionQuery }, { "teamB.version": versionQuery }];
