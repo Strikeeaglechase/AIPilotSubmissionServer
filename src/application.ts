@@ -178,7 +178,10 @@ class Application {
 			const versionQuery = req.query.version as string;
 
 			if (aipIdQuery && versionQuery)
-				query["$or"] = [{ "teamA.aipId": aipIdQuery, "teamA.version": versionQuery }, { "teamB.aipId": aipIdQuery }, { "teamB.version": versionQuery }];
+				query["$or"] = [
+					{ $and: [{ "teamA.aipId": aipIdQuery }, { "teamA.version": versionQuery }] },
+					{ $and: [{ "teamB.aipId": aipIdQuery }, { "teamB.version": versionQuery }] }
+				];
 			else if (aipIdQuery) query["$or"] = [{ "teamA.aipId": aipIdQuery }, { "teamB.aipId": aipIdQuery }];
 			else if (versionQuery) query["$or"] = [{ "teamA.version": versionQuery }, { "teamB.version": versionQuery }];
 
