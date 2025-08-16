@@ -325,7 +325,7 @@ class Application {
 			args.push(`--mount`, `type=bind,src=${outPath},dst=/sim/`);
 		}
 
-		args.push(`aip:latest`);
+		args.push(`ghcr.io/strikeeaglechase/aip:latest`);
 
 		const child = spawn(`docker`, args, {});
 
